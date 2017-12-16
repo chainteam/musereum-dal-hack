@@ -1,31 +1,28 @@
-pragma solidity 0.4.18;
+pragma solidity ^0.4.18;
 
-import './zeppelin/lifecycle/Destructible.sol';
-
-contract Authentication is Destructible {
+contract Auth {
   struct User {
     bytes32 firstName;
     bytes32 lastName;
     bytes32 email;
+    bytes32 picture;
+    bytes32 profile;
   }
 
   event SignedUp(address indexed _userAddress, bytes32 _firstName, bytes32 _lastName, bytes32 indexed _email);
   event Updated(address indexed _userAddress, bytes32 _firstName, bytes32 _lastName, bytes32 indexed _email);
-  mapping (address => User) private users;
-  address[] usersArray;
 
-  uint private id; // Stores user id temporarily
+  mapping (address => User) public users;
+  address[] usersArray;
 
   modifier onlyExistingUser {
     // Check if user exists or terminate
-
     require(!(users[msg.sender].firstName == 0x0) && !(users[msg.sender].lastName == 0x0) && !(users[msg.sender].email == 0x0));
     _;
   }
 
   modifier onlyValidEmail(bytes32 email) {
     // Only valid emails allowed
-
     require(!(email == 0x0));
     _;
   }
@@ -45,8 +42,8 @@ contract Authentication is Destructible {
   }
 
   function login()
-    external
-    view
+    public
+    constant
     onlyExistingUser
     returns (bytes32, bytes32, bytes32)
   {
@@ -54,8 +51,7 @@ contract Authentication is Destructible {
   }
 
   function signup(bytes32 firstName, bytes32 lastName, bytes32 email)
-    external
-    payable
+    public
     onlyValidFirstName(firstName)
     onlyValidLastName(lastName)
     onlyValidEmail(email)
@@ -74,8 +70,7 @@ contract Authentication is Destructible {
   }
 
   function update(bytes32 firstName, bytes32 lastName, bytes32 email)
-    external
-    payable
+    public
     onlyValidFirstName(firstName)
     onlyValidLastName(lastName)
     onlyValidEmail(email)
@@ -89,5 +84,21 @@ contract Authentication is Destructible {
     if (users[msg.sender].email != 0x0) users[msg.sender].email = email;
 
     Updated(msg.sender, firstName, lastName, email);
+  }
+
+  function profile(bytes32 _profile)
+    public
+    onlyExistingUser
+    returns(bool) 
+  {
+    users[msg.sender].profile = _profile;
+  }
+
+  function picture(bytes32 _picture)
+    public
+    onlyExistingUser
+    returns(bool)
+  {
+    users[msg.sender].picture = _picture;
   }
 }
