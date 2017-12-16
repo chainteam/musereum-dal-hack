@@ -8,10 +8,14 @@ import mutations from './mutations'
 
 Vue.use(Vuex)
 
-const vuexLocalStorage = new VuexPersist({
+export const vuexLocalStorage = new VuexPersist({
   key: 'vuex',
   storage: window.localStorage,
-  reducer: state => ({ user: state.user })
+  reducer: state => ({
+    user: state.user
+    // assets: state.assets,
+    // crowdsaleContructor: state.crowdsaleContructor
+  })
 })
 
 const store = new Vuex.Store({

@@ -1,37 +1,42 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from '@/components/Home'
-import Dashboard from '@/components/Dashboard'
+import Home from '@/containers/pages/Home'
+import SignUp from '@/containers/pages/SignUp'
+import Projects from '@/containers/pages/Projects'
+import Submit from '@/containers/pages/Submit'
 
 Vue.use(Router)
+
+const base = {
+  mode: 'history',
+  props: { default: true }
+}
 
 export default new Router({
   routes: [
     {
-      mode: 'history',
+      ...base,
       path: '/',
       name: 'Home',
       component: Home
     },
     {
-      mode: 'history',
-      path: '/home',
-      component: Home
-    },
-    {
-      mode: 'history',
-      path: '/dashboard',
-      component: Dashboard
-    },
-    {
-      mode: 'history',
+      ...base,
       path: '/sign-up',
-      component: Home
+      name: 'SignUp',
+      component: SignUp
     },
     {
-      mode: 'history',
-      path: '/profile/edit',
-      component: Dashboard
+      ...base,
+      path: '/projects',
+      name: 'Projects',
+      component: Projects
+    },
+    {
+      ...base,
+      path: '/submit',
+      name: 'Submit',
+      component: Submit
     }
   ]
 })

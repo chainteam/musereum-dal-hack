@@ -1,17 +1,30 @@
 import { ACTION_TYPES, MUTATION_TYPES } from '../util/constants'
 import getWeb3 from '../util/web3/getWeb3'
-import monitorWeb3 from '../util/web3/monitorWeb3'
+// import monitorWeb3 from '../util/web3/monitorWeb3'
+
+const autoActions = Object.keys(ACTION_TYPES).reduce((acc, key) => {
+  acc[ACTION_TYPES[key]] = function ({ commit }, ...args) {
+    commit(MUTATION_TYPES[key], ...args)
+  }
+
+  return acc
+}, {})
 
 export default {
+  ...autoActions,
+
   [ACTION_TYPES.REGISTER_WEB3_INSTANCE] ({ commit, dispatch }) {
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
       // Try to initialize web3
       getWeb3
       .then((result) => {
+        console.log('web3 result', result)
         commit(MUTATION_TYPES.REGISTER_WEB3_INSTANCE, {
           result,
           callback: (state) => {
-            monitorWeb3(state)
+            console.log('web3 register callback')
+            // monitorWeb3(state)
+            console.log('test')
             resolve()
           }
         })
@@ -26,19 +39,13 @@ export default {
               web3Error: e.err
             },
             callback: (state) => {
-              monitorWeb3(state)
+              // monitorWeb3(state)
               resolve(result)
             }
           })
         }
       })
     })
-  },
-  [ACTION_TYPES.UPDATE_WEB3_PROPERTIES] ({ commit }, payload) {
-    commit(MUTATION_TYPES.UPDATE_WEB3_PROPERTIES, payload)
-  },
-  [ACTION_TYPES.UPDATE_USER_BLOCKCHAIN_STATUS] ({ commit }) {
-    commit(MUTATION_TYPES.UPDATE_USER_BLOCKCHAIN_STATUS)
   },
   [ACTION_TYPES.LOGIN] ({ commit }, userData) {
     return new Promise(function (resolve, reject) {
@@ -54,8 +61,5 @@ export default {
         callback: () => resolve()
       })
     })
-  },
-  [ACTION_TYPES.CHANGE_CURRENT_ROUTE_TO] ({ commit }, newRoute) {
-    commit(MUTATION_TYPES.CHANGE_CURRENT_ROUTE_TO, newRoute)
   }
 }
