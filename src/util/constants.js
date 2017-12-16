@@ -5,10 +5,10 @@ export const NETWORKS = {
   4: 'Rinkeby test network',
   42: 'Kovan test network',
   4447: 'Truffle Develop Network',
-  0xC0FFEE2: 'PoA Parity (0xe)'
+  0xC0FFEE3: 'PoA Parity (0xC0FFEE3)'
 }
 
-export const APPROVED_NETWORK_ID = 0xC0FFEE2
+export const APPROVED_NETWORK_ID = 0xC0FFEE3
 
 export const MUTATION_TYPES = {
   CHANGE_CURRENT_ROUTE_TO: 'changeCurrentRouteTo',
