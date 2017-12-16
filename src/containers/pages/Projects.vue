@@ -16,7 +16,6 @@
               div(v-if='!small')
                 p.a-card__genre Pop
                 p.a-card__release Release: 5 Aug 2017
-                <p>test</p>
                    
                 p Some very short description
                 el-button.button(type='primary') Buy
