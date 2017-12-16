@@ -19,24 +19,20 @@
                   .flex-item.flex-item_grow
                     el-form-item(label='Cover Image')
                       el-upload.cover-uploader(
-                        action='https://jsonplaceholder.typicode.com/posts/'
+                        action=''
                         drag
-                        :auto-upload='false'
                         :show-file-list='false'
-                        :on-change='uploadCover'
+                        :http-request='uploadCover'
                         v-loading='idea.coverLoading')
                         img.avatar(v-if='idea.coverUrl', :src='idea.coverUrl')
                         i.el-icon-plus.uploader-icon(v-else='')
-                      //- input(type='file' @change='(evt) => uploadFile(evt, "cover")')
                   .flex-item
                     el-form-item(label='Project Logotype')
-                      //- input(type='file' @change='(evt) => uploadFile(evt, "avatar")')
                       el-upload.avatar-uploader(
-                        action='https://jsonplaceholder.typicode.com/posts/'
+                        action=''
                         drag
-                        :auto-upload='false'
                         :show-file-list='false'
-                        :on-change='uploadAvatar'
+                        :http-request='uploadAvatar'
                         v-loading='idea.avatarLoading')
                         img.avatar(v-if='idea.avatarUrl', :src='idea.avatarUrl')
                         i.el-icon-plus.uploader-icon(v-else='')
@@ -294,6 +290,7 @@
 </template>
 
 <script>
+import ipfs from 'ipfs-api'
 import marked from 'marked'
 import projectTypes from '~/src/util/projectTypes'
 import AeFlatPricing from './components/FlatPricing'
@@ -360,7 +357,38 @@ export default {
       }
     },
 
-    uploadFile (event, prefix) {
+    uploaded (prefix, response, file) {
+      console.log(response)
+    },
+
+    uploadFile (request) {
+      return this.uploadToIPFS(request, 'test')
+      // return new Promise((resolve, reject) => {
+      //   const req = new XMLHttpRequest()
+      //   req.onreadystatechange = () => {
+      //     if (req.readyState !== XMLHttpRequest.DONE) {
+      //       return
+      //     }
+
+      //     if (req.status >= 200 && req.status < 300) {
+      //       const hash = req.getResponseHeader('Ipfs-Hash')
+      //       resolve(hash)
+      //     } else {
+      //       reject(req)
+      //     }
+      //   }
+
+      //   req.onerror = (error) => {
+      //     reject(error)
+      //   }
+
+      //   req.open('PUT', 'http://localhost:8080/ipfs', true)
+      //   req.setRequestHeader('content-type', request.file.type)
+      //   req.send(request.file)
+      // })
+    },
+
+    uploadFiletest (event, prefix) {
       event.stopPropagation()
       event.preventDefault()
       const file = event.target.files[0]
@@ -375,59 +403,36 @@ export default {
       reader.readAsArrayBuffer(file)
     },
 
-    async uploadCover () {
-      console.log('test')
+    async uploadCover (file) {
       this.$set(this.idea, 'coverLoading', true)
-      setTimeout(() => {
-        this.$set(this.idea, 'coverUrl', '/static/cover.jpg')
-        this.$set(this.idea, 'coverLoading', false)
-      }, 1700)
+      const ipfsPath = await this.uploadToIPFS(file, 'cover')
+      this.$set(this.idea, 'coverUrl', `http://ipfs.io/ipfs/${ipfsPath}`)
+      this.$set(this.idea, 'coverLoading', false)
     },
 
-    async uploadAvatar () {
-      console.log('test')
+    async uploadAvatar (file) {
       this.$set(this.idea, 'avatarLoading', true)
-      setTimeout(() => {
-        this.$set(this.idea, 'avatarUrl', '/static/avatar.png')
-        this.$set(this.idea, 'avatarLoading', false)
-      }, 400)
+      const ipfsPath = await this.uploadToIPFS(file, 'avatar')
+      this.$set(this.idea, 'avatarUrl', `http://ipfs.io/ipfs/${ipfsPath}`)
+      this.$set(this.idea, 'avatarLoading', false)
     },
 
-    uploadToIPFS (file, prefix) {
-      // empty folder
-      const hash = 'QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
-      const domain = 'http://localhost:5001'
-      console.log(file.result)
-      // return fetch(`https://ipfs.macholibre.org/ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn/${this.idea.name}-${prefix}`, {
-      //   method: 'DELETE',
-      //   redirect: 'manual'
-      // }).then(deleteResponse => {
-      //   // but PUT doesn't return the hash we'd expect if the file exists, so we first get a tree without it
-      //   let clearedHash = deleteResponse.headers.get('ipfs-hash') || 'QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn'
-      //   return fetch(`https://ipfs.macholibre.org/ipfs/${clearedHash}/${this.idea.name}-${prefix}`, {
-      //     method: 'PUT',
-      //     body: file.result,
-      //     redirect: 'manual'
-      //   })
-
+    uploadToIPFS (request, prefix) {
+      console.log(prefix)
       return new Promise((resolve, reject) => {
-        const req = new XMLHttpRequest()
-        req.onreadystatechange = () => {
-          if (req.readyState !== XMLHttpRequest.DONE) {
-            return
-          }
-
-          if (req.status >= 200 && req.status < 300) {
-            resolve(req.getResponseHeader('ipfs-hash'))
-          } else {
-            reject(req)
-          }
+        let reader = new FileReader()
+        reader.onloadend = () => {
+          const buffer = Buffer.from(reader.result)
+          const ipfsProvider = ipfs({ host: '127.0.0.1', port: '5001', protocol: 'http' })
+          ipfsProvider.files.add(buffer, (err, res) => {
+            if (err) {
+              reject(err)
+            } else {
+              resolve(res[0].hash)
+            }
+          })
         }
-
-        req.onerror = (error) => { reject(error) }
-        req.open('PUT', `${domain}/ipfs/${hash}/${prefix}`, true)
-        // req.setRequestHeader(`content-type`, `image/png`)
-        req.send(file.result)
+        reader.readAsArrayBuffer(request.file)
       })
     }
   }
