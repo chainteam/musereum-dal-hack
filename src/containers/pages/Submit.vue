@@ -263,7 +263,7 @@
                         li Each party agrees that it has not relied on any representation, warranty, or provisions not explicitly stated in this agreement, and that no oral or written statement has been made to either party that in any way tends to waive any of the terms or conditions of this agreement. This agreement constitutes the final written expression of the entire agreement between the parties relating to the subject matter hereof, and it is a complete and exclusive statement of that agreement. 
                         li This agreement may be executed in any number of counterparts with the same effect as if all parties hereto had signed the same document. All counterparts are to be construed together and shall constitute one agreement. This agreement and any signed agreement or instrument entered into in connection with this agreement or contemplated hereby, and any amendments hereto or thereto, to the extent signed and delivered by means of a facsimile machine, electronic mail (including pdf or any electronic signature complying with the U.S. federal ESIGN Act of 2000, e.g., www.docusign.com), or other commercially reasonable transmission method shall be treated in all manner and respects as an original agreement or instrument and shall be considered to have the same binding legal effect as if it were the original signed version thereof delivered in person. At the request of any party hereto or to any such agreement or instrument, each other party hereto or thereto agrees to, and must, re-execute original forms thereof and deliver them to all other parties. No party hereto or to any such agreement or instrument may raise the use of a facsimile machine to deliver a signature or the fact that any signature or agreement or instrument was transmitted or communicated through the use of a facsimile machine as a defense to the formation of a contract, and each such party forever waives any such defense. 
               
-                el-button(type='primary' @click='step(1)' style="margin: 0 auto;display: block;margin-top: 80px;font-size: 120%;padding: 14px 25px;background-color: #b5ae93;border-color: #b5ae93;") Sign and Deploy
+                el-button(type='primary' @click='deploy' style="margin: 0 auto;display: block;margin-top: 80px;font-size: 120%;padding: 14px 25px;background-color: #b5ae93;border-color: #b5ae93;") Sign and Deploy
             //- div
               //- div(v-for='slice, index in slices').a-flex.a-m_b_10
               //-   el-col(:span='6').a-flex.a-m_r_20
@@ -295,6 +295,7 @@ import ipfs from 'ipfs-api'
 import marked from 'marked'
 import assetTypes from '~/src/util/assetTypes'
 import AeFlatPricing from './components/FlatPricing'
+import IdeaFactory from '~/src/js/contracts/ideaFactory.js'
 export default {
   name: 'Submit',
   props: ['user'],
@@ -362,6 +363,28 @@ export default {
   methods: {
     step (direction) {
       this.currentStep += direction
+    },
+
+    async deploy () {
+      // string name, string ticker, bytes32 meta, bytes32 cover
+      // this.uploadToIPFS()
+      // const ipfsProvider = ipfs({ host: '127.0.0.1', port: '5001', protocol: 'http' })
+      const metaHash = await this.IPFS()
+      await IdeaFactory.createIdea(this.$store.state, this.asset.token.name, this.asset.token.ticker, metaHash, this.asset.cover)
+    },
+
+    async IPFS () {
+      return new Promise((resolve, reject) => {
+        const ipfsProvider = ipfs({ host: '127.0.0.1', port: '5001', protocol: 'http' })
+        ipfsProvider.files.add(Buffer.from(JSON.stringify(this.asset), 'utf8'), (err, res) => {
+          if (err) {
+            reject(err)
+          } else {
+            console.log(res)
+            resolve(res[0].hash)
+          }
+        })
+      })
     },
 
     reset () {
