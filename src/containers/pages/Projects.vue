@@ -13,16 +13,12 @@
                   span {{asset.name}} 
                   span {{asset.ticker}} 
                   el-progress(:percentage='asset.progress')
-                h4(v-if='small' style='margin: 0; margin-bottom: .45em') {{name}}
-              //- p(style='margin: 0;') 
-              //-   span(v-if='!small') Your balance &nbsp;
-              //-   ae-currency(:decimals='decimals' :value='balance' :ticker='ticker' :tickerOnRight='true')
               div(v-if='!small')
+                p.a-card__genre Pop
+                p.a-card__release Release: 5 Aug 2017
+                <p>test</p>
+                   
                 p Some very short description
-                //- p
-                //-   ae-currency(:decimals='decimals', :value='totalSupply', :ticker='ticker' :tickerOnRight='true')
-                //-   span &nbsp;of&nbsp;
-                //-   ae-currency(:decimals='decimals', :value='maxCap', :ticker='ticker' :tickerOnRight='true')
                 el-button.button(type='primary') Buy
 </template>
 
@@ -67,3 +63,9 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  .a-card__genre {
+    color: gray;
+  }
+</style>
